@@ -414,8 +414,8 @@
         const types = ['red', 'blue', 'yellow', 'white'];
         
         types.forEach((type, i) => {
-            const buyPrice = localStorage.getItem(`buyPrice_${type}`);
-            const sellPrice = localStorage.getItem(`sellPrice_${type}`);
+            const buyPrice = localStorage.getItem(buyPrice_${type});
+            const sellPrice = localStorage.getItem(sellPrice_${type});
             if (buyPrice !== null) buyInputs[i].value = buyPrice;
             if (sellPrice !== null) sellInputs[i].value = sellPrice;
         });
@@ -423,13 +423,32 @@
 
     // Сохранение цен
     function savePrice(type, mode, value) {
-        localStorage.setItem(`${mode}Price_${type}`, value);
+        localStorage.setItem(${mode}Price_${type}, value);
     }
 
-    // Обновление результата в блоке
-    function updateResult(block, price, quantity) {
-        const result = price * quantity;
-        block.querySelector('[data-result]').textContent = quantity > 0 ? `Итого: ${result.toFixed(2)} ₽` : '';
+    // Обновление отображения общего итога в калькуляторе
+    function updateTotal(mode) {
+        const container = document.getElementById(${mode}-calculator);
+        const blocks = container.querySelectorAll('.meat-block');
+        let total = 0;
+
+        blocks.forEach(block => {
+            const qtyInput = block.querySelector('.quantity-input');
+            const priceInput = block.querySelector('.price-input');
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            total += qty * price;
+        });
+
+        // Найдём или создадим блок с общим итогом
+        let totalEl = container.querySelector('.total-result');
+        if (!totalEl) {
+            totalEl = document.createElement('div');
+            totalEl.className = 'total-result';
+            totalEl.style.cssText = 'margin-top: 25px; font-size: 20px; font-weight: bold; color: #6c5ce7; text-align: center;';
+            container.appendChild(totalEl);
+        }
+        totalEl.textContent = Общая сумма: ${total.toFixed(2)} ₽;
     }
 
     // Сброс количества
@@ -441,33 +460,30 @@
 
     // Установка обработчиков для калькулятора
     function setupCalculator(mode) {
-        const container = document.getElementById(`${mode}-calculator`);
+        const container = document.getElementById(${mode}-calculator);
         const inputs = container.querySelectorAll('.quantity-input');
         const priceInputs = container.querySelectorAll('.price-input');
-        const blocks = container.querySelectorAll('.meat-block');
-        const types = ['red', 'blue', 'yellow', 'white'];
 
-        inputs.forEach((input, i) => {
-            const block = blocks[i];
-            const type = types[i];
-            
-            input.addEventListener('input', () => {
-                const qty = parseFloat(input.value) || 0;
-                const price = parseFloat(priceInputs[i].value) || 0;
-                updateResult(block, price, qty);
-            });
+        const update = () => updateTotal(mode);
+
+        inputs.forEach(input => {
+            input.addEventListener('input', update);
         });
 
-        priceInputs.forEach((input, i) => {
+        priceInputs.forEach(input => {
+            input.addEventListener('input', update);
             input.addEventListener('change', () => {
-                savePrice(types[i], mode, input.value);
+                savePrice(input.closest('.meat-block').dataset.type, mode, input.value);
             });
         });
+
+        // Инициализация общего итога
+        update();
     }
 
     // Завершение расчёта
     function finishCalculation(mode) {
-        const container = document.getElementById(`${mode}-calculator`);
+        const container = document.getElementById(${mode}-calculator);
         const blocks = container.querySelectorAll('.meat-block');
         const types = ['red', 'blue', 'yellow', 'white'];
 
@@ -477,8 +493,7 @@
             const priceInput = block.querySelector('.price-input');
             const qty = parseFloat(qtyInput.value) || 0;
             const price = parseFloat(priceInput.value) || 0;
-
-            if (qty > 0) {
+             if (qty > 0) {
                 if (mode === 'buy') {
                     report[type].bought += qty;
                     report[type].cost += qty * price;
@@ -492,6 +507,8 @@
 
         updateReport();
         saveReport();
+        // Обновить общий итог (теперь он будет 0.00)
+        updateTotal(mode);
     }
 
     // Обновление отчёта
@@ -502,7 +519,7 @@
 
         types.forEach(type => {
             fields.forEach(field => {
-                const el = document.getElementById(`${field}-${type}`);
+                const el = document.getElementById(${field}-${type});
                 if (el) {
                     el.textContent = report[type][field].toFixed(field === 'cost' || field === 'income' ? 2 : 0);
                 }
@@ -540,8 +557,11 @@
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
             btn.classList.add('active');
             const mode = btn.id.replace('-mode', '');
-            document.getElementById(`${mode}-calculator`)?.classList.add('active');
-            document.getElementById('report-view')?.classList.toggle('active', mode === 'report');
+            if (mode === 'report') {
+                document.getElementById('report-view').classList.add('active');
+            } else {
+                document.getElementById(${mode}-calculator).classList.add('active');
+            }
         });
     });
 
@@ -554,6 +574,7 @@
     loadReport();
     setupCalculator('buy');
     setupCalculator('sell');
+</script>
 
     // Автообновление при вводе — уже реализовано в setupCalculator через 'input' event
 </script>
