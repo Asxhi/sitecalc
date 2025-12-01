@@ -647,31 +647,31 @@
 
         // Рендер выбора предметов
         function renderSelector() {
-            selectorList.innerHTML = '';
-            ITEMS.forEach(item => {
-                const toggle = document.createElement('div');
-                toggle.className = 'item-toggle';
-                toggle.dataset.id = item.id;
-                toggle.textContent = item.name;
+    selectorList.innerHTML = '';
+    ITEMS.forEach(item => {
+        const toggle = document.createElement('div');
+        toggle.className = 'item-toggle';
+        toggle.dataset.id = item.id;
+        toggle.textContent = item.name;
 
-                if (activeItems.has(item.id)) {
-                    toggle.classList.add('selected');
-                }
-
-                toggle.addEventListener('click', () => {
-                    if (activeItems.has(item.id)) {
-                        activeItems.delete(item.id);
-                        toggle.classList.remove('selected');
-                    } else {
-                        activeItems.add(item.id);
-                        toggle.classList.add('selected');
-                    }
-                    renderActiveItems();
-                });
-
-                selectorList.appendChild(toggle);
-            });
+        if (activeItems.has(item.id)) {
+            toggle.classList.add('selected');
         }
+
+        toggle.addEventListener('click', () => {
+            if (activeItems.has(item.id)) {
+                activeItems.delete(item.id);
+                toggle.classList.remove('selected');
+            } else {
+                activeItems.add(item.id);
+                toggle.classList.add('selected');
+            }
+            renderActiveItems();
+        });
+
+        selectorList.appendChild(toggle);
+    });
+}
 
         // Рендер активных предметов
         function renderActiveItems() {
