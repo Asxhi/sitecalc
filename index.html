@@ -5,531 +5,579 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Игровой калькулятор</title>
     <style>
-    :root {
-        --bg-dark: #0a0a0f;
-        --card-bg: #12121a;
-        --border-glow: rgba(255,255,255,0.1);
-        --text-primary: #ffffff;
-        --text-secondary: #cccccc;
-        --accent-yellow: #ffeb3b;
-        --accent-cyan: #00ffff;
-        --accent-red: #ff5722;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-        background: var(--bg-dark);
-        color: var(--text-primary);
-        padding: 20px;
-        min-height: 100vh;
-    }
-
-    .header {
-        text-align: center;
-        margin-bottom: 25px;
-    }
-
-    .header h1 {
-        font-size: 2.2rem;
-        margin-bottom: 15px;
-        background: linear-gradient(to right, var(--accent-yellow), var(--accent-cyan));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-
-    /* Вкладки: Покупка | Продажа | Прибыль */
-    .tabs {
-        display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-
-    .tab-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 2px solid rgba(0, 255, 255, 0.5);
-        color: var(--accent-cyan);
-        padding: 8px 20px;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-    }
-
-    .tab-btn:hover {
-        background: rgba(0, 255, 255, 0.1);
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-        color: #ffffff;
-        transform: scale(1.03);
-    }
-
-    .tab-btn.active {
-        background: rgba(0, 255, 255, 0.2);
-        color: white;
-        box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
-    }
-
-    .tab-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .tab-btn:hover::before {
-        left: 100%;
-    }
-
-    /* Кнопки выбора предметов — такие же, как вкладки, но с уникальным selected-состоянием */
-    .item-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 2px solid rgba(0, 255, 255, 0.5);
-        color: var(--accent-cyan);
-        padding: 8px 20px;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-        font-size: 0.9rem;
-        min-width: auto;
-        max-width: 220px;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .item-toggle:hover {
-        background: rgba(0, 255, 255, 0.1);
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-        color: #ffffff;
-        transform: scale(1.03);
-    }
-
-    /* Состояние выбранного предмета — неоново-красный */
-    .item-toggle.selected {
-        background: transparent;
-        border-color: #ff2a6d;
-        color: #ff2a6d;
-        box-shadow: 0 0 8px rgba(255, 42, 109, 0.6);
-        font-weight: bold;
-    }
-
-    /* Уникальный hover-эффект для выбранной кнопки */
-    .item-toggle.selected:hover {
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(255, 42, 109, 0.8);
-        background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.2), transparent) no-repeat;
-        background-size: 100% 100%;
-        background-position: -100% 0;
-        animation: fillGlow 0.6s forwards;
-    }
-
-    @keyframes fillGlow {
-        to {
-            background-position: 0 0;
+        :root {
+            --bg-dark: #0a0a0f;
+            --card-bg: #12121a;
+            --border-glow: rgba(255,255,255,0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --accent-yellow: #ffeb3b;
+            --accent-cyan: #00ffff;
+            --accent-red: #ff5722;
         }
-    }
 
-    /* Элементы списка — с минимальным отступом */
-    .items-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        justify-content: center;
-    }
-
-    /* Основной контейнер */
-    .container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 16px;
-        margin-bottom: 30px;
-    }
-
-    .item-card {
-        background: var(--card-bg);
-        border-radius: 12px;
-        padding: 14px;
-        border: 1px solid var(--border-glow);
-        box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-    }
-
-    .item-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 14px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .item-icon {
-        width: 50px;
-        height: 50px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        border-radius: 6px;
-        border: 1px solid rgba(255,255,255,0.1);
-        background-color: #1a1a22;
-    }
-
-    .item-name {
-        font-weight: bold;
-        font-size: 1.1rem;
-    }
-
-    .input-group {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 10px;
-    }
-
-    .input-label {
-        display: block;
-        font-size: 0.82rem;
-        margin-bottom: 4px;
-        color: var(--text-secondary);
-    }
-
-    .input-field {
-        width: 100%;
-        padding: 8px 10px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 6px;
-        color: var(--text-primary);
-        font-size: 0.95rem;
-    }
-
-    .input-field:focus {
-        outline: none;
-        border-color: var(--accent-yellow);
-        box-shadow: 0 0 5px rgba(255,235,59,0.3);
-    }
-
-    .result {
-        font-size: 1.25rem;
-        font-weight: bold;
-        color: var(--accent-yellow);
-        text-align: center;
-        margin: 12px 0;
-        padding: 8px;
-        background: rgba(255,235,59,0.1);
-        border-radius: 6px;
-        border-left: 3px solid var(--accent-yellow);
-    }
-
-    .contacts {
-        font-size: 0.72rem;
-        color: var(--text-secondary);
-        background: rgba(255,255,255,0.03);
-        padding: 6px;
-        border-radius: 5px;
-        border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    /* Компактный режим */
-    .container.compact {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-
-    .container.compact .item-card {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px;
-        border-radius: 8px;
-        background: var(--card-bg);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-        min-height: 60px;
-    }
-
-    .container.compact .item-icon {
-        width: 50px;
-        height: 50px;
-    }
-
-    .container.compact .item-name {
-        font-size: 0.95rem;
-        min-width: 140px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .container.compact .input-group {
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        min-width: 100px;
-    }
-
-    .container.compact .input-label {
-        font-size: 0.75rem;
-        margin-bottom: 3px;
-    }
-
-    .container.compact .input-field {
-        width: 85px;
-        padding: 6px 8px;
-        font-size: 0.88rem;
-    }
-
-    .container.compact .result {
-        font-size: 1.1rem;
-        margin: 0;
-        padding: 8px 12px;
-        min-width: 85px;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Блок текущей стоимости — по центру */
-    .total-section {
-        background: var(--card-bg);
-        padding: 20px;
-        border-radius: 12px;
-        margin-top: 25px;
-        border-top: 2px solid var(--border-glow);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .total-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .total-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .total-label {
-        font-size: 1.15rem;
-        color: var(--text-secondary);
-    }
-
-    .total-value-container {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .total-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--accent-yellow);
-    }
-
-    .copy-btn, .clear-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: none;
-    }
-
-    .copy-btn {
-        background: rgba(33,150,243,0.2);
-        border: 1px solid var(--accent-cyan);
-        color: var(--accent-cyan);
-    }
-
-    .copy-btn:hover {
-        background: rgba(33,150,243,0.3);
-        transform: scale(1.1);
-    }
-
-    .clear-btn {
-        background: rgba(255, 87, 34, 0.2);
-        border: 1px solid #ff5722;
-        color: #ff5722;
-    }
-
-    .clear-btn:hover {
-        background: rgba(255, 87, 34, 0.3);
-        transform: scale(1.1);
-    }
-
-    /* Кнопка "Сделка состоялась" — в стиле вкладок */
-    .deal-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-        border: 2px solid rgba(0, 255, 255, 0.5);
-        color: var(--accent-cyan);
-        padding: 8px 20px;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-    }
-
-    .deal-btn:hover {
-        background: rgba(0, 255, 255, 0.1);
-        box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
-        color: #ffffff;
-        transform: scale(1.03);
-    }
-
-    .deal-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .deal-btn:hover::before {
-        left: 100%;
-    }
-
-    /* Отчёт прибыли */
-    .profit-section {
-        background: var(--card-bg);
-        padding: 20px;
-        border-radius: 12px;
-        margin-top: 30px;
-        border-top: 2px solid var(--border-glow);
-        display: none;
-    }
-
-    .profit-section.active {
-        display: block;
-    }
-
-    .overall-profit {
-        text-align: center;
-        font-size: 2.2rem;
-        font-weight: bold;
-        margin-bottom: 25px;
-        padding: 15px;
-        border-radius: 10px;
-        background: rgba(255,235,59,0.05);
-        border: 1px solid rgba(255,235,59,0.2);
-        box-shadow: 0 0 10px rgba(255,235,59,0.3);
-        color: var(--accent-yellow);
-        transition: all 0.2s;
-    }
-
-    .overall-profit:hover {
-        background: rgba(255,235,59,0.1);
-        box-shadow: 0 0 15px rgba(255,235,59,0.5);
-    }
-
-    .profit-item {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border-glow);
-        border-radius: 10px;
-        padding: 14px;
-        margin-bottom: 15px;
-        transition: background 0.2s;
-    }
-
-    .profit-item:hover {
-        background: rgba(255,255,255,0.07);
-    }
-
-    .profit-item-name {
-        font-weight: bold;
-        font-size: 1.1rem;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .profit-line {
-        display: flex;
-        margin: 6px 0;
-        font-size: 0.95rem;
-    }
-
-    .profit-amount {
-        font-weight: bold;
-    }
-
-    .profit-positive {
-        color: var(--accent-yellow);
-    }
-
-    .profit-negative {
-        color: var(--accent-red);
-    }
-
-    .no-data {
-        text-align: center;
-        color: var(--text-secondary);
-        font-style: italic;
-        padding: 20px;
-    }
-
-    @media (max-width: 700px) {
-        .container.compact {
-            grid-template-columns: 1fr;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .container {
-            grid-template-columns: 1fr;
+
+        body {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            padding: 20px;
+            min-height: 100vh;
         }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--accent-yellow), var(--accent-cyan));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Вкладки: Покупка | Продажа | Прибыль */
         .tabs {
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
         }
-    }
-</style>
+
+        .tab-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            color: var(--accent-cyan);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .tab-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+        }
+
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .tab-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Кнопки выбора предметов — такие же, как вкладки */
+        .item-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            color: var(--accent-cyan);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+            font-size: 0.9rem;
+            min-width: auto;
+            max-width: 220px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-toggle:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        /* Состояние выбранного предмета — неоново-красный */
+        .item-toggle.selected {
+            background: transparent;
+            border-color: #ff2a6d;
+            color: #ff2a6d;
+            box-shadow: 0 0 8px rgba(255, 42, 109, 0.6);
+            font-weight: bold;
+        }
+
+        .item-toggle.selected:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 42, 109, 0.8);
+            background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.2), transparent) no-repeat;
+            background-size: 100% 100%;
+            background-position: -100% 0;
+            animation: fillGlow 0.6s forwards;
+        }
+
+        @keyframes fillGlow {
+            to {
+                background-position: 0 0;
+            }
+        }
+
+        /* Элементы списка — с минимальным отступом */
+        .items-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        /* Список предметов (скрытый) */
+        .selector {
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-glow);
+            overflow: hidden;
+        }
+
+        /* Основной контейнер */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px;
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .item-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .item-icon {
+            width: 50px;
+            height: 50px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background-color: #1a1a22;
+        }
+
+        .item-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.82rem;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 8px 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 5px rgba(255,235,59,0.3);
+        }
+
+        .result {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+            text-align: center;
+            margin: 12px 0;
+            padding: 8px;
+            background: rgba(255,235,59,0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-yellow);
+        }
+
+        .contacts {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.03);
+            padding: 6px;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Компактный режим */
+        .container.compact {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .container.compact .item-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            min-height: 60px;
+        }
+
+        .container.compact .item-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .container.compact .item-name {
+            font-size: 0.95rem;
+            min-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .container.compact .input-group {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 100px;
+        }
+
+        .container.compact .input-label {
+            font-size: 0.75rem;
+            margin-bottom: 3px;
+        }
+
+        .container.compact .input-field {
+            width: 85px;
+            padding: 6px 8px;
+            font-size: 0.88rem;
+        }
+
+        .container.compact .result {
+            font-size: 1.1rem;
+            margin: 0;
+            padding: 8px 12px;
+            min-width: 85px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Блок текущей стоимости — по центру */
+        .total-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border-top: 2px solid var(--border-glow);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .total-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .total-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .total-label {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+        }
+
+        .total-value-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .total-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-yellow);
+        }
+
+        .copy-btn, .clear-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .copy-btn {
+            background: rgba(33,150,243,0.2);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .copy-btn:hover {
+            background: rgba(33,150,243,0.3);
+            transform: scale(1.1);
+        }
+
+        .clear-btn {
+            background: rgba(255, 87, 34, 0.2);
+            border: 1px solid #ff5722;
+            color: #ff5722;
+        }
+
+        .clear-btn:hover {
+            background: rgba(255, 87, 34, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Кнопка "Сделка состоялась" — в стиле вкладок */
+        .deal-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            color: var(--accent-cyan);
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .deal-btn:hover {
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.6);
+            color: #ffffff;
+            transform: scale(1.03);
+        }
+
+        .deal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .deal-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Пузырьки для анимации */
+        .bubble {
+            position: absolute;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: bubblePop 0.6s ease-out forwards;
+            z-index: 10;
+        }
+
+        @keyframes bubblePop {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        /* Тост-уведомление */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(0);
+            background: rgba(0, 255, 255, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 0.2s, transform 0.2s;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        /* Отчёт прибыли */
+        .profit-section {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            border-top: 2px solid var(--border-glow);
+            display: none;
+        }
+
+        .profit-section.active {
+            display: block;
+        }
+
+        .overall-profit {
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255,235,59,0.05);
+            border: 1px solid rgba(255,235,59,0.2);
+            box-shadow: 0 0 10px rgba(255,235,59,0.3);
+            color: var(--accent-yellow);
+            transition: all 0.2s;
+        }
+
+        .overall-profit:hover {
+            background: rgba(255,235,59,0.1);
+            box-shadow: 0 0 15px rgba(255,235,59,0.5);
+        }
+
+        .profit-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 15px;
+            transition: background 0.2s;
+        }
+
+        .profit-item:hover {
+            background: rgba(255,255,255,0.07);
+        }
+
+        .profit-item-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profit-line {
+            display: flex;
+            margin: 6px 0;
+            font-size: 0.95rem;
+        }
+
+        .profit-amount {
+            font-weight: bold;
+        }
+
+        .profit-positive {
+            color: var(--accent-yellow);
+        }
+
+        .profit-negative {
+            color: var(--accent-red);
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .container.compact {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -634,7 +682,6 @@
                 btn.classList.add('active');
                 currentTab = btn.dataset.tab;
 
-                // Скрыть всё
                 buyContainer.style.display = 'none';
                 sellContainer.style.display = 'none';
                 profitSection.classList.remove('active');
@@ -687,11 +734,9 @@
             ITEMS.forEach(item => {
                 if (!activeItems.has(item.id)) return;
 
-                // Покупка
                 const buyCard = createItemCard(item, 'buy');
                 buyContainer.appendChild(buyCard);
 
-                // Продажа
                 const sellCard = createItemCard(item, 'sell');
                 sellContainer.appendChild(sellCard);
             });
@@ -756,10 +801,8 @@
         }
 
         function renderProfitReport() {
-            // Подсчёт по каждому предмету
             const itemStats = {};
 
-            // Инициализация
             ITEMS.forEach(item => {
                 itemStats[item.id] = {
                     id: item.id,
@@ -772,7 +815,6 @@
                 };
             });
 
-            // Покупки
             buyHistory.forEach(record => {
                 if (itemStats[record.id]) {
                     itemStats[record.id].boughtQty += record.quantity;
@@ -780,7 +822,6 @@
                 }
             });
 
-            // Продажи
             sellHistory.forEach(record => {
                 if (itemStats[record.id]) {
                     itemStats[record.id].soldQty += record.quantity;
@@ -788,12 +829,10 @@
                 }
             });
 
-            // Общая прибыль
             const totalBought = Object.values(itemStats).reduce((sum, item) => sum + item.boughtTotal, 0);
             const totalSold = Object.values(itemStats).reduce((sum, item) => sum + item.soldTotal, 0);
             const totalProfit = totalSold - totalBought;
 
-            // Обновление общей прибыли
             overallProfit.textContent = `Общая прибыль: ${totalProfit >= 0 ? '+' : ''}${totalProfit.toLocaleString('ru-RU')} ₽`;
             if (totalProfit >= 0) {
                 overallProfit.className = 'overall-profit profit-positive';
@@ -801,19 +840,16 @@
                 overallProfit.className = 'overall-profit profit-negative';
             }
 
-            // Фильтрация: только предметы с данными
             const relevantItems = Object.values(itemStats).filter(item =>
                 item.boughtQty > 0 || item.soldQty > 0
             );
 
-            // Сортировка: сначала прибыльные, потом убыточные
             relevantItems.sort((a, b) => {
                 const profitA = a.soldTotal - a.boughtTotal;
                 const profitB = b.soldTotal - b.boughtTotal;
-                return profitB - profitA; // убывание
+                return profitB - profitA;
             });
 
-            // Рендер детализации
             if (relevantItems.length === 0) {
                 profitDetails.innerHTML = '<div class="no-data">Нет данных. Совершите сделку в разделе "Покупка" или "Продажа"</div>';
                 return;
@@ -845,8 +881,41 @@
             });
         }
 
-        // Кнопка "Сделка состоялась"
-        dealBtn.addEventListener('click', () => {
+        // === НОВАЯ ФУНКЦИЯ: тост-уведомление ===
+        function showToast(message, isError = false) {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            toast.style.background = isError ? 'rgba(255, 87, 34, 0.9)' : 'rgba(0, 255, 255, 0.9)';
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-10px)';
+            }, 1800);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 2000);
+        }
+
+        // === НОВЫЙ ОБРАБОТЧИК ДЛЯ "СДЕЛКА СОСТОЯЛАСЬ" ===
+        dealBtn.addEventListener('click', function(e) {
+            // Анимация пузырьков
+            for (let i = 0; i < 6; i++) {
+                const bubble = document.createElement('span');
+                bubble.classList.add('bubble');
+                const rect = this.getBoundingClientRect();
+                bubble.style.left = (e.clientX - rect.left) + 'px';
+                bubble.style.top = (e.clientY - rect.top) + 'px';
+                this.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 600);
+            }
+
+            // Логика сделки
             if (currentTab === 'buy' || currentTab === 'sell') {
                 const container = currentTab === 'buy' ? buyContainer : sellContainer;
                 let hasData = false;
@@ -879,12 +948,12 @@
                 });
 
                 if (hasData) {
-                    alert(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
+                    showToast(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
                     if (currentTab === 'profit') {
                         renderProfitReport();
                     }
                 } else {
-                    alert('⚠️ Введите количество и цену хотя бы для одного предмета.');
+                    showToast('⚠️ Введите количество и цену хотя бы для одного предмета.', true);
                 }
             }
         });
@@ -907,7 +976,7 @@
                 copyBtn.innerHTML = '✓';
                 setTimeout(() => copyBtn.innerHTML = original, 1000);
             } catch (e) {
-                alert('Не удалось скопировать.');
+                showToast('Не удалось скопировать.', true);
             }
         });
 
@@ -916,7 +985,6 @@
             const isExpanded = selectorContainer.style.display === 'block';
             selectorContainer.style.display = isExpanded ? 'none' : 'block';
 
-            // Если открываем — рендерим кнопки
             if (!isExpanded) {
                 renderSelector();
             }
@@ -926,52 +994,9 @@
                 : 'Выбор предметов ▲';
         });
 
-       // Инициализация
-renderSelector();
-renderActiveItems();
-
-// === Анимация "Игристая кнопка" для "Сделка состоялась" ===
-
-var animateButton = function(e) {
-    e.preventDefault();
-    for (let i = 0; i < 5; i++) {
-        const bubble = document.createElement('span');
-        bubble.classList.add('bubble');
-        bubble.style.left = (e.clientX - e.target.offsetLeft) + 'px';
-        bubble.style.top = (e.clientY - e.target.offsetTop) + 'px';
-        e.target.appendChild(bubble);
-
-        setTimeout(() => {
-            bubble.remove();
-        }, 600);
-    }
-};
-
-document.getElementById('deal-btn').addEventListener('click', animateButton);
-
-const style = document.createElement('style');
-style.textContent = `
-    .bubble {
-        position: absolute;
-        pointer-events: none;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        animation: bubblePop 0.6s ease-out forwards;
-        z-index: 1000;
-    }
-
-    @keyframes bubblePop {
-        0% {
-            transform: scale(0);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(1.5);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
+        // Инициализация
+        renderSelector();
+        renderActiveItems();
     </script>
 </body>
 </html>
