@@ -97,62 +97,52 @@
             left: 100%;
         }
 
-        /* Кнопки выбора предметов — с большими отступами */
-        .item-toggle {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255,255,255,0.05);
-            padding: 14px 28px;
-            border-radius: 20px;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            color: var(--text-secondary);
-            min-width: 160px;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            flex-shrink: 0;
-        }
+        /* Кнопки выбора предметов — миниатюрные */
+.item-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.05);
+    padding: 8px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    min-width: auto;
+    max-width: 200px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        .item-toggle:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--text-primary);
-        }
+.item-toggle:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--text-primary);
+}
 
-        .item-toggle.selected {
-            background: rgba(255,255,255,0.1);
-            color: var(--accent-yellow);
-            border-color: var(--accent-yellow);
-            box-shadow: 0 0 10px rgba(255,235,59,0.5);
-        }
+.item-toggle.selected {
+    background: rgba(255,255,255,0.1);
+    color: var(--accent-yellow);
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 10px rgba(255,235,59,0.5);
+}
 
-        .item-toggle.selected:hover {
-            background: rgba(255,235,59,0.2);
-            box-shadow: 0 0 15px rgba(255,235,59,0.7);
-        }
+.item-toggle.selected:hover {
+    background: rgba(255,235,59,0.2);
+    box-shadow: 0 0 15px rgba(255,235,59,0.7);
+}
 
-        /* Список предметов (скрытый) */
-        .selector {
-            background: var(--card-bg);
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid var(--border-glow);
-            overflow: hidden;
-        }
-
-        /* Элементы списка — с большими отступами */
-        .items-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 24px;
-            justify-content: center;
-            /* УДАЛЕНО: max-height, overflow, transition — чтобы список отображался */
-        }
+/* Элементы списка — с меньшим отступом */
+.items-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
 
         /* Основной контейнер */
         .container {
