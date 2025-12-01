@@ -904,59 +904,59 @@
 
         // === НОВЫЙ ОБРАБОТЧИК ДЛЯ "СДЕЛКА СОСТОЯЛАСЬ" ===
         dealBtn.addEventListener('click', function(e) {
-            // Анимация пузырьков
-            for (let i = 0; i < 6; i++) {
-                const bubble = document.createElement('span');
-                bubble.classList.add('bubble');
-                const rect = this.getBoundingClientRect();
-                bubble.style.left = (e.clientX - rect.left) + 'px';
-                bubble.style.top = (e.clientY - rect.top) + 'px';
-                this.appendChild(bubble);
-                setTimeout(() => bubble.remove(), 600);
-            }
+    // === Анимация пузырьков ===
+    const rect = this.getBoundingClientRect();
+    for (let i = 0; i < 6; i++) {
+        const bubble = document.createElement('span');
+        bubble.classList.add('bubble');
+        bubble.style.left = (e.clientX - rect.left) + 'px';
+        bubble.style.top = (e.clientY - rect.top) + 'px';
+        this.appendChild(bubble);
+        setTimeout(() => bubble.remove(), 600);
+    }
 
-            // Логика сделки
-            if (currentTab === 'buy' || currentTab === 'sell') {
-                const container = currentTab === 'buy' ? buyContainer : sellContainer;
-                let hasData = false;
+    // === Логика сделки (без изменений) ===
+    if (currentTab === 'buy' || currentTab === 'sell') {
+        const container = currentTab === 'buy' ? buyContainer : sellContainer;
+        let hasData = false;
 
-                container.querySelectorAll('.item-card').forEach(card => {
-                    const qInput = card.querySelector('.quantity');
-                    const pInput = card.querySelector('.price');
-                    const q = parseInt(qInput.value) || 0;
-                    const p = parseInt(pInput.value) || 0;
-                    if (q > 0 && p > 0) {
-                        hasData = true;
-                        const id = card.dataset.id;
-                        const item = ITEMS.find(it => it.id === id);
-                        const total = q * p;
-                        const record = {
-                            id: id,
-                            name: item.name,
-                            quantity: q,
-                            price: p,
-                            total: total,
-                            timestamp: new Date()
-                        };
+        container.querySelectorAll('.item-card').forEach(card => {
+            const qInput = card.querySelector('.quantity');
+            const pInput = card.querySelector('.price');
+            const q = parseInt(qInput.value) || 0;
+            const p = parseInt(pInput.value) || 0;
+            if (q > 0 && p > 0) {
+                hasData = true;
+                const id = card.dataset.id;
+                const item = ITEMS.find(it => it.id === id);
+                const total = q * p;
+                const record = {
+                    id: id,
+                    name: item.name,
+                    quantity: q,
+                    price: p,
+                    total: total,
+                    timestamp: new Date()
+                };
 
-                        if (currentTab === 'buy') {
-                            buyHistory.push(record);
-                        } else {
-                            sellHistory.push(record);
-                        }
-                    }
-                });
-
-                if (hasData) {
-                    showToast(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
-                    if (currentTab === 'profit') {
-                        renderProfitReport();
-                    }
+                if (currentTab === 'buy') {
+                    buyHistory.push(record);
                 } else {
-                    showToast('⚠️ Введите количество и цену хотя бы для одного предмета.', true);
+                    sellHistory.push(record);
                 }
             }
         });
+
+        if (hasData) {
+            showToast(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
+            if (currentTab === 'profit') {
+                renderProfitReport();
+            }
+        } else {
+            showToast('⚠️ Введите количество и цену хотя бы для одного предмета.', true);
+        }
+    }
+});
 
         // Очистка полей
         clearBtn.addEventListener('click', () => {
