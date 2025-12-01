@@ -405,71 +405,54 @@
             transform: scale(1.1);
         }
 
-        /* Новая кнопка "Сделка состоялась" — уникальный стиль */
-.deal-btn-new {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 42, 109, 0.15); /* фон — полупрозрачный неон-красный */
-    border: 2px solid #ff2a6d;
-    color: #ff2a6d;
-    padding: 8px 24px;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 8px rgba(255, 42, 109, 0.5);
-    font-size: 0.95rem;
-    min-width: 160px;
-}
+        /* Новая кнопка "Сделка состоялась" — с ховер-эффектом пузырьков */
+        .deal-btn-new {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 42, 109, 0.15); /* полупрозрачный неон-красный */
+            border: 2px solid #ff2a6d;
+            color: #ff2a6d;
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(255, 42, 109, 0.5);
+            font-size: 0.95rem;
+            min-width: 160px;
+        }
 
-/* Ховер — уникальный: свечение + подъём + фон */
-.deal-btn-new:hover {
-    background: rgba(255, 42, 109, 0.3);
-    box-shadow: 0 0 20px rgba(255, 42, 109, 0.8);
-    color: white;
-    transform: translateY(-2px) scale(1.02);
-    z-index: 2;
-}
+        .deal-btn-new:hover {
+            background: rgba(255, 42, 109, 0.3);
+            box-shadow: 0 0 20px rgba(255, 42, 109, 0.8);
+            color: white;
+            transform: translateY(-2px) scale(1.02);
+            z-index: 2;
+        }
 
-/* Псевдоэлемент для анимированной подсветки (как у вкладок, но в красном) */
-.deal-btn-new::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 42, 109, 0.4), transparent);
-    transition: left 0.6s ease;
-}
+        /* Пузырьки для ховера */
+        .bubble {
+            position: absolute;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: bubblePop 0.6s ease-out forwards;
+            z-index: 10;
+        }
 
-.deal-btn-new:hover::before {
-    left: 100%;
-}
-
-/* Пузырьки для анимации */
-.bubble {
-    position: absolute;
-    pointer-events: none;
-    background: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
-    animation: bubblePop 0.6s ease-out forwards;
-    z-index: 10;
-}
-
-@keyframes bubblePop {
-    0% {
-        transform: scale(0);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(2);
-        opacity: 0;
-    }
-}
+        @keyframes bubblePop {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
 
         /* Тост-уведомление */
         .toast {
@@ -618,20 +601,20 @@
         <div id="profit-details"></div>
     </div>
 
-   <!-- Блок текущей стоимости и кнопок -->
-<div class="total-section">
-    <div class="total-wrapper">
-        <button class="deal-btn-new" id="deal-btn">Сделка состоялась</button>
-        <div class="total-info">
-            <span class="total-label">Текущая стоимость:</span>
-            <div class="total-value-container">
-                <div class="total-value" id="total-cost">0</div>
-                <button class="copy-btn" id="copy-total" title="Копировать сумму">📋</button>
-                <button class="clear-btn" id="clear-quantities" title="Очистить все количества">🧹</button>
+    <!-- Блок текущей стоимости и кнопок -->
+    <div class="total-section">
+        <div class="total-wrapper">
+            <button class="deal-btn-new" id="deal-btn">Сделка состоялась</button>
+            <div class="total-info">
+                <span class="total-label">Текущая стоимость:</span>
+                <div class="total-value-container">
+                    <div class="total-value" id="total-cost">0</div>
+                    <button class="copy-btn" id="copy-total" title="Копировать сумму">📋</button>
+                    <button class="clear-btn" id="clear-quantities" title="Очистить все количества">🧹</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <script>
         const ITEMS = [
@@ -886,7 +869,7 @@
             });
         }
 
-        // === НОВАЯ ФУНКЦИЯ: тост-уведомление ===
+        // === Функция тоста ===
         function showToast(message, isError = false) {
             const existing = document.querySelector('.toast');
             if (existing) existing.remove();
@@ -894,7 +877,8 @@
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.textContent = message;
-            toast.style.background = isError ? 'rgba(255, 87, 34, 0.9)' : 'rgba(0, 255, 255, 0.9)';
+            toast.style.background = isError ? 'rgba(255, 87, 34, 0.9)' : 'rgba(255, 42, 109, 0.9)';
+            toast.style.color = 'white';
             document.body.appendChild(toast);
 
             setTimeout(() => {
@@ -907,89 +891,66 @@
             }, 2000);
         }
 
-        // === НОВАЯ КНОПКА: "Сделка состоялась" ===
-
-// Функция тоста (остаётся без изменений)
-function showToast(message, isError = false) {
-    const existing = document.querySelector('.toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    toast.style.background = isError ? 'rgba(255, 87, 34, 0.9)' : 'rgba(255, 42, 109, 0.9)'; // красный тост
-    toast.style.color = 'white';
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(-10px)';
-    }, 1800);
-
-    setTimeout(() => {
-        toast.remove();
-    }, 2000);
-}
-
-// Обработчик клика
-dealBtn.addEventListener('click', function(e) {
-    // === Игристая анимация (пузырьки) ===
-    const rect = this.getBoundingClientRect();
-    for (let i = 0; i < 8; i++) {
-        const bubble = document.createElement('span');
-        bubble.classList.add('bubble');
-        bubble.style.left = (e.clientX - rect.left) + 'px';
-        bubble.style.top = (e.clientY - rect.top) + 'px';
-        this.appendChild(bubble);
-        setTimeout(() => {
-            if (bubble.parentNode === this) {
-                bubble.remove();
-            }
-        }, 600);
-    }
-
-    // === Логика сделки ===
-    if (currentTab === 'buy' || currentTab === 'sell') {
-        const container = currentTab === 'buy' ? buyContainer : sellContainer;
-        let hasData = false;
-
-        container.querySelectorAll('.item-card').forEach(card => {
-            const qInput = card.querySelector('.quantity');
-            const pInput = card.querySelector('.price');
-            const q = parseInt(qInput.value) || 0;
-            const p = parseInt(pInput.value) || 0;
-            if (q > 0 && p > 0) {
-                hasData = true;
-                const id = card.dataset.id;
-                const item = ITEMS.find(it => it.id === id);
-                const total = q * p;
-                const record = {
-                    id: id,
-                    name: item.name,
-                    quantity: q,
-                    price: p,
-                    total: total,
-                    timestamp: new Date()
-                };
-
-                if (currentTab === 'buy') {
-                    buyHistory.push(record);
-                } else {
-                    sellHistory.push(record);
-                }
+        // === Ховер-эффект с пузырьками для кнопки "Сделка состоялась" ===
+        dealBtn.addEventListener('mouseenter', function(e) {
+            const rect = this.getBoundingClientRect();
+            for (let i = 0; i < 6; i++) {
+                const bubble = document.createElement('span');
+                bubble.classList.add('bubble');
+                bubble.style.left = (e.clientX - rect.left) + 'px';
+                bubble.style.top = (e.clientY - rect.top) + 'px';
+                this.appendChild(bubble);
+                setTimeout(() => {
+                    if (bubble.parentNode === this) {
+                        bubble.remove();
+                    }
+                }, 600);
             }
         });
 
-        if (hasData) {
-            showToast(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
-            if (currentTab === 'profit') {
-                renderProfitReport();
+        // === Обработчик клика — фиксирует сделку ===
+        dealBtn.addEventListener('click', function(e) {
+            if (currentTab === 'buy' || currentTab === 'sell') {
+                const container = currentTab === 'buy' ? buyContainer : sellContainer;
+                let hasData = false;
+
+                container.querySelectorAll('.item-card').forEach(card => {
+                    const qInput = card.querySelector('.quantity');
+                    const pInput = card.querySelector('.price');
+                    const q = parseInt(qInput.value) || 0;
+                    const p = parseInt(pInput.value) || 0;
+                    if (q > 0 && p > 0) {
+                        hasData = true;
+                        const id = card.dataset.id;
+                        const item = ITEMS.find(it => it.id === id);
+                        const total = q * p;
+                        const record = {
+                            id: id,
+                            name: item.name,
+                            quantity: q,
+                            price: p,
+                            total: total,
+                            timestamp: new Date()
+                        };
+
+                        if (currentTab === 'buy') {
+                            buyHistory.push(record);
+                        } else {
+                            sellHistory.push(record);
+                        }
+                    }
+                });
+
+                if (hasData) {
+                    showToast(`✅ Сделка по ${currentTab === 'buy' ? 'покупке' : 'продаже'} зафиксирована!`);
+                    if (currentTab === 'profit') {
+                        renderProfitReport();
+                    }
+                } else {
+                    showToast('⚠️ Введите количество и цену хотя бы для одного предмета.', true);
+                }
             }
-        } else {
-            showToast('⚠️ Введите количество и цену хотя бы для одного предмета.', true);
-        }
-    }
-});
+        });
 
         // Очистка полей
         clearBtn.addEventListener('click', () => {
