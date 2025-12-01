@@ -907,20 +907,49 @@
             }, 2000);
         }
 
-        // === НОВЫЙ ОБРАБОТЧИК ДЛЯ "СДЕЛКА СОСТОЯЛАСЬ" ===
-        dealBtn.addEventListener('click', function(e) {
-    // === Анимация пузырьков ===
+        // === НОВАЯ КНОПКА: "Сделка состоялась" ===
+const dealBtn = document.getElementById('deal-btn');
+
+// Функция тоста (остаётся без изменений)
+function showToast(message, isError = false) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.style.background = isError ? 'rgba(255, 87, 34, 0.9)' : 'rgba(255, 42, 109, 0.9)'; // красный тост
+    toast.style.color = 'white';
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+    }, 1800);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 2000);
+}
+
+// Обработчик клика
+dealBtn.addEventListener('click', function(e) {
+    // === Игристая анимация (пузырьки) ===
     const rect = this.getBoundingClientRect();
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
         const bubble = document.createElement('span');
         bubble.classList.add('bubble');
         bubble.style.left = (e.clientX - rect.left) + 'px';
         bubble.style.top = (e.clientY - rect.top) + 'px';
         this.appendChild(bubble);
-        setTimeout(() => bubble.remove(), 600);
+        setTimeout(() => {
+            if (bubble.parentNode === this) {
+                bubble.remove();
+            }
+        }, 600);
     }
 
-    // === Логика сделки (без изменений) ===
+    // === Логика сделки ===
     if (currentTab === 'buy' || currentTab === 'sell') {
         const container = currentTab === 'buy' ? buyContainer : sellContainer;
         let hasData = false;
