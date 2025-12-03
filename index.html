@@ -478,6 +478,22 @@
             box-shadow: 0 0 8px rgba(255,235,59,0.4);
         }
 
+        /* Стиль для календаря */
+        .profit-date-selector input[type="date"] {
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 0.9rem;
+            min-width: 120px;
+        }
+
+        .profit-date-selector input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
         /* Тост-уведомление */
         .toast {
             position: fixed;
@@ -558,7 +574,7 @@
             gap: 10px;
             margin-bottom: 8px;
             font-weight: bold;
-            font-size: 1.05rem; /* увеличен */
+            font-size: 1.05rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -576,14 +592,14 @@
         }
 
         .profit-stats {
-            font-size: 0.92rem; /* увеличен */
+            font-size: 0.92rem;
             color: var(--text-secondary);
             margin-bottom: 10px;
             line-height: 1.4;
         }
 
         .profit-line {
-            font-size: 0.9rem; /* увеличен */
+            font-size: 0.9rem;
             margin: 5px 0;
             white-space: nowrap;
             overflow: hidden;
@@ -592,7 +608,7 @@
 
         .profit-amount {
             font-weight: bold;
-            font-size: 1rem; /* увеличен */
+            font-size: 1rem;
         }
 
         .profit-positive {
@@ -603,7 +619,7 @@
             color: var(--accent-red);
         }
 
-        /* Кнопка удаления — остаётся компактной */
+        /* Кнопка удаления */
         .delete-record-btn {
             position: absolute;
             top: 10px;
@@ -642,6 +658,11 @@
         @media (max-width: 600px) {
             .profit-items-grid {
                 grid-template-columns: 1fr;
+            }
+            .profit-date-selector {
+                flex-direction: column;
+                align-items: flex-start !important;
+                gap: 8px;
             }
             .container.compact {
                 grid-template-columns: 1fr;
@@ -685,13 +706,23 @@
 
     <!-- Прибыль -->
     <div class="profit-section" id="profit-section">
-        <!-- Переключатель периода -->
-        <div class="profit-period-selector" style="text-align: center; margin-bottom: 15px;">
+        <!-- Выбор периода -->
+        <div class="profit-date-selector">
             <button class="period-btn active" data-period="all">Всё время</button>
-            <button class="period-btn" data-period="month">Месяц</button>
-            <button class="period-btn" data-period="week">Неделя</button>
-            <button class="period-btn" data-period="today">Сегодня</button>
+            
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <label style="color: var(--text-secondary); font-size: 0.9rem;">Выбрать день:</label>
+                <input type="date" id="date-single">
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <label style="color: var(--text-secondary); font-size: 0.9rem;">С:</label>
+                <input type="date" id="date-from">
+                <label style="color: var(--text-secondary); font-size: 0.9rem;">По:</label>
+                <input type="date" id="date-to">
+            </div>
         </div>
+
         <!-- Общая прибыль -->
         <div class="overall-profit" id="overall-profit">Общая прибыль: 0 ₽</div>
         <!-- Детализация -->
@@ -735,14 +766,15 @@
             { id: 'solution', name: 'Колба с раствором', price: 1300, icon: 'kolba-s-rastvorom.png' },
             { id: 'acid', name: 'Азотная кислота', price: 1800, icon: 'azotnaya-kislota.png' },
             { id: 'meat', name: 'Мясо', price: 250, icon: 'myaso.png' }
-            // Добавьте сюда новые предметы, например:
-            // { id: 'udar', name: 'Удар', price: 2000, icon: 'udar.png' }
         ];
 
         // Состояния
         let activeItems = new Set();
         let currentTab = 'buy';
-        let profitPeriod = 'all'; // 'all', 'month', 'week', 'today'
+        let profitPeriodMode = 'all'; // 'all', 'single', 'range'
+        let profitDateSingle = '';
+        let profitDateFrom = '';
+        let profitDateTo = '';
 
         // Отчёты
         let buyHistory = [];
@@ -769,7 +801,10 @@
                 localStorage.setItem('activeItems', JSON.stringify([...activeItems]));
                 localStorage.setItem('buyHistory', JSON.stringify(buyHistory));
                 localStorage.setItem('sellHistory', JSON.stringify(sellHistory));
-                localStorage.setItem('profitPeriod', profitPeriod);
+                localStorage.setItem('profitPeriodMode', profitPeriodMode);
+                localStorage.setItem('profitDateSingle', profitDateSingle);
+                localStorage.setItem('profitDateFrom', profitDateFrom);
+                localStorage.setItem('profitDateTo', profitDateTo);
             } catch (e) {
                 console.warn('Не удалось сохранить данные:', e);
             }
@@ -780,7 +815,10 @@
                 const savedActive = localStorage.getItem('activeItems');
                 const savedBuy = localStorage.getItem('buyHistory');
                 const savedSell = localStorage.getItem('sellHistory');
-                const savedPeriod = localStorage.getItem('profitPeriod');
+                const savedMode = localStorage.getItem('profitPeriodMode');
+                const savedSingle = localStorage.getItem('profitDateSingle');
+                const savedFrom = localStorage.getItem('profitDateFrom');
+                const savedTo = localStorage.getItem('profitDateTo');
 
                 if (savedActive) {
                     activeItems = new Set(JSON.parse(savedActive));
@@ -791,41 +829,37 @@
                 if (savedSell) {
                     sellHistory = JSON.parse(savedSell);
                 }
-                if (savedPeriod) {
-                    profitPeriod = savedPeriod;
-                }
+                if (savedMode) profitPeriodMode = savedMode;
+                if (savedSingle) profitDateSingle = savedSingle;
+                if (savedFrom) profitDateFrom = savedFrom;
+                if (savedTo) profitDateTo = savedTo;
             } catch (e) {
                 console.warn('Не удалось загрузить данные:', e);
                 localStorage.removeItem('activeItems');
                 localStorage.removeItem('buyHistory');
                 localStorage.removeItem('sellHistory');
-                localStorage.removeItem('profitPeriod');
+                localStorage.removeItem('profitPeriodMode');
+                localStorage.removeItem('profitDateSingle');
+                localStorage.removeItem('profitDateFrom');
+                localStorage.removeItem('profitDateTo');
             }
         }
 
-        // === ФИЛЬТРАЦИЯ ПО ПЕРИОДУ ===
-        function isRecordInPeriod(record, period) {
-            const now = new Date();
+        // === ФИЛЬТРАЦИЯ ПО ДАТЕ ===
+        function isRecordInPeriod(record) {
+            if (profitPeriodMode === 'all') return true;
+            
             const recordDate = new Date(record.timestamp);
-            
-            if (period === 'all') return true;
-            
-            if (period === 'today') {
-                return recordDate.toDateString() === now.toDateString();
+            const recordDateStr = recordDate.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
+            if (profitPeriodMode === 'single' && profitDateSingle) {
+                return recordDateStr === profitDateSingle;
             }
-            
-            if (period === 'week') {
-                const oneWeekAgo = new Date(now);
-                oneWeekAgo.setDate(now.getDate() - 7);
-                return recordDate >= oneWeekAgo;
+
+            if (profitPeriodMode === 'range' && profitDateFrom && profitDateTo) {
+                return recordDateStr >= profitDateFrom && recordDateStr <= profitDateTo;
             }
-            
-            if (period === 'month') {
-                const oneMonthAgo = new Date(now);
-                oneMonthAgo.setMonth(now.getMonth() - 1);
-                return recordDate >= oneMonthAgo;
-            }
-            
+
             return true;
         }
 
@@ -955,7 +989,7 @@
             totalCostElement.textContent = total;
         }
 
-        // === ОБНОВЛЁННАЯ ФУНКЦИЯ ОТЧЁТА С ФИЛЬТРАЦИЕЙ ===
+        // === ФУНКЦИЯ ОТЧЁТА ===
         function renderProfitReport() {
             const itemStats = {};
 
@@ -973,9 +1007,9 @@
                 };
             });
 
-            // Фильтруем истории по периоду
-            const filteredBuy = buyHistory.filter(record => isRecordInPeriod(record, profitPeriod));
-            const filteredSell = sellHistory.filter(record => isRecordInPeriod(record, profitPeriod));
+            // Фильтруем по дате
+            const filteredBuy = buyHistory.filter(record => isRecordInPeriod(record));
+            const filteredSell = sellHistory.filter(record => isRecordInPeriod(record));
 
             filteredBuy.forEach((record) => {
                 if (itemStats[record.id]) {
@@ -1201,24 +1235,50 @@
         // === ИНИЦИАЛИЗАЦИЯ ===
         loadFromStorage();
 
-        // Активируем сохранённую кнопку периода
-        if (profitPeriod) {
-            const activeBtn = document.querySelector(`.period-btn[data-period="${profitPeriod}"]`);
-            if (activeBtn) {
-                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                activeBtn.classList.add('active');
-            }
-        }
+        // Настройка календаря
+        const dateSingleInput = document.getElementById('date-single');
+        const dateFromInput = document.getElementById('date-from');
+        const dateToInput = document.getElementById('date-to');
+        const allTimeBtn = document.querySelector('.period-btn[data-period="all"]');
 
-        // Обработчик переключения периода
-        document.querySelectorAll('.period-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                profitPeriod = btn.dataset.period;
-                saveToStorage();
-                renderProfitReport();
-            });
+        const today = new Date().toISOString().split('T')[0];
+        dateSingleInput.value = today;
+        dateToInput.value = today;
+        dateFromInput.value = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+        // Восстановление значений из localStorage
+        if (profitDateSingle) dateSingleInput.value = profitDateSingle;
+        if (profitDateFrom) dateFromInput.value = profitDateFrom;
+        if (profitDateTo) dateToInput.value = profitDateTo;
+
+        // Обработчики
+        allTimeBtn.addEventListener('click', () => {
+            profitPeriodMode = 'all';
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            allTimeBtn.classList.add('active');
+            saveToStorage();
+            renderProfitReport();
+        });
+
+        dateSingleInput.addEventListener('change', () => {
+            profitPeriodMode = 'single';
+            profitDateSingle = dateSingleInput.value;
+            saveToStorage();
+            renderProfitReport();
+        });
+
+        dateFromInput.addEventListener('change', () => {
+            profitPeriodMode = 'range';
+            profitDateFrom = dateFromInput.value;
+            saveToStorage();
+            renderProfitReport();
+        });
+
+        dateToInput.addEventListener('change', () => {
+            profitPeriodMode = 'range';
+            profitDateTo = dateToInput.value;
+            saveToStorage();
+            renderProfitReport();
         });
 
         renderSelector();
